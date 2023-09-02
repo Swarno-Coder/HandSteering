@@ -30,7 +30,9 @@ while True:
         cv2.circle(img, (x2, y2), 10, (255, 0, 219), cv2.FILLED)
         cv2.circle(img, (cx, cy), 10, (255, 0, 219), cv2.FILLED)
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 219), 4)
-
+        if y1-y2 < -int(img.shape[0] * 0.05): print ("D")
+        elif y1-y2 > int(img.shape[0] * 0.05): print ("A")
+        else: print ("Straight")
         '''
         length = math.hypot((x2-x1),(y2-y1))
         volBar = np.interp(length, [48,280], [365, 115])
