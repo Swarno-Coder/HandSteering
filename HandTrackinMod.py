@@ -1,6 +1,4 @@
-import cv2
 import mediapipe as mp
-import time
 from google.protobuf.json_format import MessageToDict
 
 class handDetector():
@@ -10,24 +8,17 @@ class handDetector():
         self.modelComp = modelCom
         self.detectionCon = detectionCon
         self.trackCon = trackCon
-
         self.mpHand = mp.solutions.hands
-        self.hands = self.mpHand.Hands(self.mode, self.maxHands, self.modelComp,
-                                       self.detectionCon, self.trackCon)
+        self.hands = self.mpHand.Hands(self.mode, self.maxHands, self.modelComp,self.detectionCon, self.trackCon)
         self.mpDraw = mp.solutions.drawing_utils
 
-    def findHands(self, img, draw=True):
-        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        self.results = self.hands.process(imgRGB)
+    def findHands(self, img, img_rgb, draw=True):
+        self.results = self.hands.process(img_rgb)
+        counter = []
         if self.results.multi_handedness:
             for idx, hand_handedness in enumerate(self.results.multi_handedness):
                 handedness_dict = MessageToDict(hand_handedness)
-                whichHand = (handedness_dict['classification'][0]['label'])
-                # print(whichHand)
-                if whichHand == "Left":
-                    RightHand = True
-                else:
-                    RightHand = False
+                counter.append(handedness_dict['classification'][0]['index'])
         tipLms = []
         if self.results.multi_hand_landmarks:
             if len(self.results.multi_hand_landmarks)>=2:
@@ -42,37 +33,8 @@ class handDetector():
                     for id, lm in enumerate(handLms.landmark):
                         cx, cy = int(lm.x * w), int(lm.y * h)
                         lmList.append([id, cx, cy])
-                    #tipX = handLms.landmark[self.mpHand.HandLandmark.THUMB_TIP].x * w
-                    #tipY = handLms.landmark[self.mpHand.HandLandmark.THUMB_TIP].y * h
                     tipLms.append(lmList)
             else: print("Please provide both hands")
+            if counter and tipLms:
+                if counter[0] == 1: tipLms[0], tipLms[1] = tipLms[1], tipLms[0]
         return img, tipLms
-
-def main():
-    cTime = pTime = 0
-
-    ##########################
-    wCam, hCam = 1080, 920
-    ##########################
-
-    cap = cv2.VideoCapture(1)
-    cap.set(3, wCam)
-    cap.set(4, hCam)
-    detector = handDetector()
-    while True:
-        success, img = cap.read()
-        img = cv2.flip(img, 1)
-        img, lm = detector.findHands(img)
-        print(lm)
-        cTime = time.time()
-        fps = 1 / (cTime - pTime)
-        pTime = cTime
-        cv2.putText(img, f'FPS: {int(fps)}', (20, 70), cv2.FONT_HERSHEY_PLAIN,
-                    3, (255, 0, 0), 3)
-        cv2.imshow("Result", img)
-        if cv2.waitKey(5) & 0xFF == ord('q'):
-            break
-    cap.release()
-
-if __name__ == '__main__':
-    main()
