@@ -1,16 +1,11 @@
 import cv2, time
 import HandTrackinMod as htm
-import win32api, win32con
+import pyautogui as pg
 
 ##########################
 wCam , hCam = 1080, 920
 cTime = pTime = 0
 ##########################
-
-def pressKey(key):
-    win32api.keybd_event(key, 0, 0, 0)
-    time.sleep(.05)
-    win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
 
 cap = cv2.VideoCapture(1)
 cap.set(3, wCam)
@@ -31,12 +26,12 @@ while True:
         cv2.circle(img, (x2, y2), 10, (255, 0, 219), cv2.FILLED)
         cv2.circle(img, (cx, cy), 10, (255, 0, 219), cv2.FILLED)
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 219), 4)
-        if y1-y2 < -int(img.shape[0] * 0.05): pressKey(0x44)
-        elif y1-y2 > int(img.shape[0] * 0.05): pressKey(0x41)
+        if y1-y2 < -int(img.shape[0] * 0.05): pg.press("d")
+        elif y1-y2 > int(img.shape[0] * 0.05): pg.press("a")
         else: print ("Straight")
         p1, p2, p3, p4 = lmList[0][8][2] < lmList[0][5][2],lmList[0][12][2] < lmList[0][9][2],lmList[0][16][2] < lmList[0][13][2],lmList[0][20][2] < lmList[0][17][2]
         q1, q2, q3, q4 = lmList[1][8][2] < lmList[1][5][2],lmList[1][12][2] < lmList[1][9][2],lmList[1][16][2] < lmList[1][13][2],lmList[1][20][2] < lmList[1][17][2]
-        if (p1 and p2 and p3 and p4 and q1 and q2 and q3 and q4): pressKey(0x20)
+        if (p1 and p2 and p3 and p4 and q1 and q2 and q3 and q4): pg.press("space")
     cTime = time.time()
     fps = 1 / (cTime - pTime)
     pTime = cTime
